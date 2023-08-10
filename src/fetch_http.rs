@@ -1,5 +1,5 @@
 use crate::argument::ArgumentMarker;
-use crate::common::{Builder, GenericOutput};
+use crate::common::{Builder, GenericData};
 use crate::layer::RunGeneric;
 use anyhow::Result;
 use async_trait::async_trait;
@@ -12,7 +12,7 @@ pub struct FetchHttpOutput {
     body: String,
     status: u16,
 }
-impl From<FetchHttpOutput> for GenericOutput {
+impl From<FetchHttpOutput> for GenericData {
     fn from(value: FetchHttpOutput) -> Self {
         let mut data = Self::new();
         data.insert("url".to_string(), Arc::new(value.url.to_string()));
@@ -47,7 +47,7 @@ pub struct FetchHttpLayer {
 
 impl Builder for FetchHttpLayer {
     type Args = FetchHttpState;
-    fn build(&self, out: &GenericOutput) -> Result<Self::Args> {
+    fn build(&self, out: &GenericData) -> Result<Self::Args> {
         Ok(Self::Args {
             url: self.url.get_value(out)?.to_string(),
         })
@@ -56,7 +56,7 @@ impl Builder for FetchHttpLayer {
 
 #[async_trait]
 impl RunGeneric for FetchHttpLayer {
-    async fn run_generic(&self, prev_out: &GenericOutput) -> Result<GenericOutput> {
+    async fn run_generic(&self, prev_out: &GenericData) -> Result<GenericData> {
         let args = self.build(prev_out)?;
         let out = args.run(&args).await?;
         dbg!(&out);

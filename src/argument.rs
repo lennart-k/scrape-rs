@@ -1,4 +1,4 @@
-use crate::common::GenericOutput;
+use crate::common::GenericData;
 use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 
@@ -8,7 +8,7 @@ pub struct PreviousOutput {
 }
 
 impl<'a> PreviousOutput {
-    pub fn get_value<T: 'static>(&self, out: &'a GenericOutput) -> Result<&'a T> {
+    pub fn get_value<T: 'static>(&self, out: &'a GenericData) -> Result<&'a T> {
         out.get(&self.key)
             .ok_or(Error::msg(format!("invalid key: {}", self.key)))?
             .downcast_ref::<T>()
@@ -24,7 +24,7 @@ pub enum ArgumentMarker<T> {
 }
 
 impl<'a, T: 'static> ArgumentMarker<T> {
-    pub fn get_value(&'a self, out: &'a GenericOutput) -> Result<&'a T> {
+    pub fn get_value(&'a self, out: &'a GenericData) -> Result<&'a T> {
         match &self {
             Self::Value(value) => Ok(value),
             Self::PreviousOutput(prev) => prev.get_value(out),

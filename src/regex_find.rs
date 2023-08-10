@@ -1,5 +1,5 @@
 use crate::{
-    common::{Builder, GenericOutput},
+    common::{Builder, GenericData},
     layer::RunGeneric,
 };
 use anyhow::Result;
@@ -16,7 +16,7 @@ pub struct RegexFindOutput {
 }
 // convert output to generic output for further usage
 // TODO: make this derivable
-impl From<RegexFindOutput> for GenericOutput {
+impl From<RegexFindOutput> for GenericData {
     fn from(value: RegexFindOutput) -> Self {
         let mut data = Self::new();
         data.insert("needle".to_string(), Arc::new(value.needle.to_string()));
@@ -51,7 +51,7 @@ pub struct RegexFindLayer {
 // Implement Builder to generate arguments from previous output
 impl Builder for RegexFindLayer {
     type Args = RegexFindState;
-    fn build(&self, prev_out: &GenericOutput) -> Result<RegexFindState> {
+    fn build(&self, prev_out: &GenericData) -> Result<RegexFindState> {
         Ok(Self::Args {
             pattern: self.pattern.get_value(prev_out)?.to_string(),
             input: self.input.get_value(prev_out)?.to_string(),
@@ -60,7 +60,7 @@ impl Builder for RegexFindLayer {
 }
 #[async_trait]
 impl RunGeneric for RegexFindLayer {
-    async fn run_generic(&self, prev_out: &GenericOutput) -> Result<GenericOutput> {
+    async fn run_generic(&self, prev_out: &GenericData) -> Result<GenericData> {
         let args = self.build(prev_out)?;
         let out = args.run().await?;
         dbg!(&out);
