@@ -15,17 +15,17 @@ mod regex_find;
 
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type")]
-enum ConfigurableArgsBuilder {
+enum GenericLayer {
     FetchHttp(FetchHttpLayer),
     RegexFind(RegexFindLayer),
 }
 
 #[async_trait]
-impl RunGeneric for ConfigurableArgsBuilder {
+impl RunGeneric for GenericLayer {
     async fn run_generic(&self, out: &GenericData) -> Result<GenericData> {
         match self {
-            ConfigurableArgsBuilder::FetchHttp(builder) => builder.run_generic(out).await,
-            ConfigurableArgsBuilder::RegexFind(builder) => builder.run_generic(out).await,
+            GenericLayer::FetchHttp(builder) => builder.run_generic(out).await,
+            GenericLayer::RegexFind(builder) => builder.run_generic(out).await,
         }
     }
 }
@@ -33,7 +33,7 @@ impl RunGeneric for ConfigurableArgsBuilder {
 #[tokio::main]
 async fn main() -> Result<()> {
     let file_contents = fs::read_to_string("sample.yml")?;
-    let layers: Vec<ConfigurableArgsBuilder> = serde_yaml::from_str(&file_contents)?;
+    let layers: Vec<GenericLayer> = serde_yaml::from_str(&file_contents)?;
     let mut prev_out = GenericData::new();
     for layer in layers {
         prev_out = layer.run_generic(&prev_out).await?;
