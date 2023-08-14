@@ -1,17 +1,16 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use common::GenericData;
-use fetch_http::FetchHttpLayer;
 use layer::RunGeneric;
-use regex_find::RegexFindLayer;
+use layers::fetch_http::FetchHttpLayer;
+use layers::regex_find::RegexFindLayer;
 use serde::Deserialize;
 use std::fs;
 
 pub mod argument;
 pub mod common;
-mod fetch_http;
 pub mod layer;
-mod regex_find;
+pub mod layers;
 
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type")]
