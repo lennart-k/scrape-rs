@@ -33,7 +33,7 @@ pub struct RegexFindState {
 }
 // evaluate the layer, all arguments are encapsulated in the state
 impl RegexFindState {
-    async fn run(&self) -> anyhow::Result<RegexFindOutput> {
+    async fn run(&self) -> Result<RegexFindOutput> {
         let pattern = regex::Regex::new(self.pattern.as_str())?;
         let needle = pattern.find(self.input.as_str()).unwrap();
         Ok(RegexFindOutput {
