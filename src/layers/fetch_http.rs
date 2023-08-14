@@ -1,6 +1,7 @@
 use crate::argument::ArgumentMarker;
 use crate::common::{Builder, GenericData};
 use crate::layer::RunGeneric;
+use crate::scope::Scope;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::Deserialize;
@@ -15,9 +16,9 @@ pub struct FetchHttpOutput {
 impl From<FetchHttpOutput> for GenericData {
     fn from(value: FetchHttpOutput) -> Self {
         let mut data = Self::new();
-        data.insert("url".to_string(), Arc::new(value.url.to_string()));
-        data.insert("body".to_string(), Arc::new(value.body));
-        data.insert("status".to_string(), Arc::new(value.status));
+        data.set("url".to_string(), Arc::new(value.url.to_string()));
+        data.set("body".to_string(), Arc::new(value.body));
+        data.set("status".to_string(), Arc::new(value.status));
         data
     }
 }

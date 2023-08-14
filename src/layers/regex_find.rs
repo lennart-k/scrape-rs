@@ -1,6 +1,7 @@
 use crate::{
     common::{Builder, GenericData},
     layer::RunGeneric,
+    scope::Scope,
 };
 use anyhow::Result;
 use async_trait::async_trait;
@@ -19,7 +20,7 @@ pub struct RegexFindOutput {
 impl From<RegexFindOutput> for GenericData {
     fn from(value: RegexFindOutput) -> Self {
         let mut data = Self::new();
-        data.insert("needle".to_string(), Arc::new(value.needle.to_string()));
+        data.set("needle".to_string(), Arc::new(value.needle.to_string()));
         data
     }
 }

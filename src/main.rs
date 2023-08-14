@@ -11,6 +11,7 @@ pub mod argument;
 pub mod common;
 pub mod layer;
 pub mod layers;
+pub mod scope;
 
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type")]
