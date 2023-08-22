@@ -1,22 +1,25 @@
 use anyhow::Result;
-use common::GenericData;
-use layer::RunGeneric;
+use layer::Layer;
 use layers::GenericLayer;
+use scope::Scope;
+use scope::SimpleScope;
 use std::fs;
+use std::sync::Arc;
 
 pub mod argument;
-pub mod common;
 pub mod layer;
 pub mod layers;
+pub mod object_path;
 pub mod scope;
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let file_contents = fs::read_to_string("sample.yml")?;
     let layers: Vec<GenericLayer> = serde_yaml::from_str(&file_contents)?;
-    let mut prev_out = GenericData::new();
+    let mut context: SimpleScope = SimpleScope::new();
     for layer in layers {
-        prev_out = layer.run_generic(&prev_out).await?;
+        let out = Arc::new(layer.run(&context).await?);
+        context.set("previous".to_string(), out.clone());
     }
     Ok(())
 }

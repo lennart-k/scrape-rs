@@ -1,11 +1,14 @@
+use crate::argument::Value;
+use std::collections::HashMap;
+use std::ops::Deref;
+use std::sync::Arc;
+
 use crate::argument::ArgumentMarker;
-use crate::common::{Builder, GenericData};
-use crate::layer::RunGeneric;
+use crate::layer::Layer;
 use crate::scope::Scope;
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::Deserialize;
-use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct FetchHttpOutput {
@@ -13,13 +16,17 @@ pub struct FetchHttpOutput {
     body: String,
     status: u16,
 }
-impl From<FetchHttpOutput> for GenericData {
+
+impl From<FetchHttpOutput> for Value {
     fn from(value: FetchHttpOutput) -> Self {
-        let mut data = Self::new();
-        data.set("url".to_string(), Arc::new(value.url.to_string()));
-        data.set("body".to_string(), Arc::new(value.body));
-        data.set("status".to_string(), Arc::new(value.status));
-        data
+        let mut data: HashMap<String, Arc<Value>> = HashMap::new();
+        data.insert(
+            "url".to_string(),
+            Arc::new(Value::String(value.url.to_string())),
+        );
+        data.insert("body".to_string(), Arc::new(Value::String(value.body)));
+        data.insert("status".into(), Arc::new(Value::U64(value.status as u64)));
+        Value::HashMap(data)
     }
 }
 
@@ -43,24 +50,22 @@ impl FetchHttpState {
 // It is used to allow argument parameterisation
 #[derive(Deserialize, Debug)]
 pub struct FetchHttpLayer {
-    url: ArgumentMarker<String>,
+    url: ArgumentMarker,
 }
 
-impl Builder for FetchHttpLayer {
-    type Args = FetchHttpState;
-    fn build(&self, out: &GenericData) -> Result<Self::Args> {
-        Ok(Self::Args {
-            url: self.url.get_value(out)?.to_string(),
+impl FetchHttpLayer {
+    fn build<S: Scope>(&self, scope: &S) -> Result<FetchHttpState> {
+        Ok(FetchHttpState {
+            url: self.url.get_value(scope)?.deref().clone().try_into()?,
         })
     }
 }
 
 #[async_trait]
-impl RunGeneric for FetchHttpLayer {
-    async fn run_generic(&self, prev_out: &GenericData) -> Result<GenericData> {
-        let args = self.build(prev_out)?;
+impl Layer for FetchHttpLayer {
+    async fn run<S: Scope>(&self, context: &S) -> Result<Value> {
+        let args = self.build(context)?;
         let out = args.run(&args).await?;
-        dbg!(&out);
         Ok(out.into())
     }
 }
