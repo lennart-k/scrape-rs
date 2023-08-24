@@ -1,7 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::scope::Scope;
-use anyhow::{Error, Result};
+use crate::{object_path::ResolvePath, scope::Scope};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -92,10 +92,7 @@ pub struct ContextVariable {
 }
 impl ContextVariable {
     pub fn get_value<S: Scope>(&self, scope: &S) -> Result<Arc<Value>> {
-        Ok(scope
-            .get(self.key.as_str())
-            .ok_or(Error::msg("invalid key"))?
-            .clone())
+        Ok(scope.resolve(self.key.as_str())?.clone())
     }
 }
 
